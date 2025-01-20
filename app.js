@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,11 +14,11 @@ const {
 } = require("./middlewares/authentication");
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/blogify")
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -34,8 +36,8 @@ app.use(checkForAuthenticationCookie);
 app.use(express.static(path.resolve("./public")));
 
 // Routes
-app.get("/",async (req, res) => {
-  const allBlogs = await Blog.find({})
+app.get("/", async (req, res) => {
+  const allBlogs = await Blog.find({});
   res.render("home", {
     user: req.user,
     blogs: allBlogs,
@@ -50,7 +52,6 @@ app.use((err, req, res, next) => {
   console.error("Global error handler:", err.message);
   res.status(err.status || 500).render("error", { message: err.message });
 });
-
 
 // Start the server
 app.listen(PORT, () => console.log(`Server started at PORT::${PORT}`));
